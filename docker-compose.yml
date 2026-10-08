@@ -1,0 +1,91 @@
+version: "3.8"
+
+services:
+  jellyfin:
+    image: jellyfin/jellyfin:latest
+    container_name: jellyfin
+    restart: unless-stopped
+    environment:
+      - TZ=${TZ:-Europe/Berlin}
+      - JELLYFIN_PublishedServerUrl=${JELLYFIN_PUBLISHED_SERVER_URL:-http://localhost:8096}
+    ports:
+      - "${JELLYFIN_HTTP_PORT:-8096}:8096"
+      - "${JELLYFIN_HTTPS_PORT:-8920}:8920"
+    volumes:
+      - ${JELLYFIN_CONFIG_DIR:-./data/jellyfin/config}:/config
+      - ${JELLYFIN_CACHE_DIR:-./data/jellyfin/cache}:/cache
+      - ${MEDIA_ROOT:-./media}:/media
+    networks:
+      - media
+
+  qbittorrent:
+    image: lscr.io/linuxserver/qbittorrent:latest
+    container_name: qbittorrent
+    restart: unless-stopped
+    environment:
+      - PUID=${PUID:-1000}
+      - PGID=${PGID:-1000}
+      - TZ=${TZ:-Europe/Berlin}
+      - WEBUI_PORT=${QBITTORRENT_PORT:-8080}
+    ports:
+      - "${QBITTORRENT_PORT:-8080}:8080"
+      - "${QBITTORRENT_TORRENT_PORT:-6881}:6881"
+      - "${QBITTORRENT_TORRENT_PORT:-6881}:6881/udp"
+    volumes:
+      - ${QBITTORRENT_CONFIG_DIR:-./data/qbittorrent/config}:/config
+      - ${DOWNLOADS_DIR:-./downloads}:/downloads
+    networks:
+      - media
+
+  sonarr:
+    image: lscr.io/linuxserver/sonarr:latest
+    container_name: sonarr
+    restart: unless-stopped
+    environment:
+      - PUID=${PUID:-1000}
+      - PGID=${PGID:-1000}
+      - TZ=${TZ:-Europe/Berlin}
+    ports:
+      - "${SONARR_PORT:-8989}:8989"
+    volumes:
+      - ${SONARR_CONFIG_DIR:-./data/sonarr/config}:/config
+      - ${MEDIA_ROOT:-./media}:/media
+      - ${DOWNLOADS_DIR:-./downloads}:/downloads
+    networks:
+      - media
+
+  radarr:
+    image: lscr.io/linuxserver/radarr:latest
+    container_name: radarr
+    restart: unless-stopped
+    environment:
+      - PUID=${PUID:-1000}
+      - PGID=${PGID:-1000}
+      - TZ=${TZ:-Europe/Berlin}
+    ports:
+      - "${RADARR_PORT:-7878}:7878"
+    volumes:
+      - ${RADARR_CONFIG_DIR:-./data/radarr/config}:/config
+      - ${MEDIA_ROOT:-./media}:/media
+      - ${DOWNLOADS_DIR:-./downloads}:/downloads
+    networks:
+      - media
+
+  prowlarr:
+    image: lscr.io/linuxserver/prowlarr:latest
+    container_name: prowlarr
+    restart: unless-stopped
+    environment:
+      - PUID=${PUID:-1000}
+      - PGID=${PGID:-1000}
+      - TZ=${TZ:-Europe/Berlin}
+    ports:
+      - "${PROWLARR_PORT:-9696}:9696"
+    volumes:
+      - ${PROWLARR_CONFIG_DIR:-./data/prowlarr/config}:/config
+    networks:
+      - media
+
+networks:
+  media:
+    driver: bridge
