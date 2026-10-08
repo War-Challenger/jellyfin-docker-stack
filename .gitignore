@@ -1,0 +1,8 @@
+# Ignore local Docker data
+/data/
+.env
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
